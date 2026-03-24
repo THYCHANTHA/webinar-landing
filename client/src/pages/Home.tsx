@@ -218,17 +218,15 @@ function Navbar() {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => smoothScrollTo("signup")}
-            className="hidden sm:block"
-          >
+          <div className="hidden sm:block">
             <Button
               size="sm"
+              onClick={() => smoothScrollTo("signup")}
               className="bg-teal text-navy font-semibold hover:bg-teal-dark transition-all duration-300 hover:shadow-[0_0_20px_oklch(0.82_0.17_175/0.4)]"
             >
               Reserve Spot
             </Button>
-          </button>
+          </div>
 
           {/* Mobile hamburger */}
           <button
