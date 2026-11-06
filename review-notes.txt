@@ -1,9 +1,0 @@
-Visual Review Notes:
-- All sections render correctly: Navbar, Hero, About, Highlights, Signup, Footer
-- No TypeScript errors
-- No browser console errors (only debug/vite connection messages)
-- All 4 generated images load correctly via CDN URLs
-- Content extracted successfully: hero headline, about section, 4 highlight cards, registration CTA
-- Markdown extraction confirms all text content is present
-- The form section includes Full Name and Email fields with Register button
-- Footer includes branding, copyright, and placeholder links (Privacy, Terms, Contact)

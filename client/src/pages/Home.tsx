@@ -37,58 +37,56 @@ import {
   Play,
 } from "lucide-react";
 
-/* ─── Asset URLs ─── */
-const HERO_BG =
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663463697740/iBVzbyjrGvjPx5wE5s8yxP/hero-bg-kWxG7XamLjp44rpgSFuoGU.webp";
-const ABOUT_VISUAL =
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663463697740/iBVzbyjrGvjPx5wE5s8yxP/about-visual-EwmCSoUeocPe3sBHi4aksE.webp";
-const CTA_BG =
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663463697740/iBVzbyjrGvjPx5wE5s8yxP/cta-bg-DhvUFqYTSZg7WqmDqJ9Skj.webp";
-const PATTERN =
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663463697740/iBVzbyjrGvjPx5wE5s8yxP/pattern-accent-nfezLHD9jgfKVjaSp4FFnp.webp";
+/* ─── Asset URLs (served from client/public/images) ─── */
+const asset = (file: string) => `${import.meta.env.BASE_URL}images/${file}`;
+const HERO_BG = asset("hero-bg.webp");
+const ABOUT_VISUAL = asset("about-visual.webp");
+const CTA_BG = asset("cta-bg.webp");
+const PATTERN = asset("pattern-accent.webp");
 
+/*
+ * NOTE: This is a portfolio design demo. The event, speakers, companies,
+ * testimonials and headshots (AI-generated) are fictional.
+ */
 const SPEAKERS = [
   {
     name: "Dr. Maya Chen",
     role: "Chief Digital Officer, Nexus Corp",
-    bio: "15+ years leading digital transformation at Fortune 500 companies. Author of \"The Digital Imperative.\"",
-    image:
-      "https://d2xsxph8kpxj0f.cloudfront.net/310519663463697740/iBVzbyjrGvjPx5wE5s8yxP/speaker-1-JBXz3rgSPjehLE6F9vGiM6.webp",
+    bio: "15+ years leading digital transformation programmes at large enterprises.",
+    image: asset("speaker-1.webp"),
     topic: "Opening Keynote",
   },
   {
     name: "James Whitfield",
     role: "Founder & CEO, StrategyFirst",
-    bio: "Serial entrepreneur and advisor to 50+ startups. Pioneered the data-driven strategy framework.",
-    image:
-      "https://d2xsxph8kpxj0f.cloudfront.net/310519663463697740/iBVzbyjrGvjPx5wE5s8yxP/speaker-2-LstYhYsLoveM2ftwiVnhzX.webp",
+    bio: "Serial entrepreneur and advisor to early-stage startups on data-driven strategy.",
+    image: asset("speaker-2.webp"),
     topic: "Growth Frameworks",
   },
   {
     name: "Sarah Mitchell",
     role: "VP of Product, InnovateTech",
-    bio: "Built products used by 10M+ users. Specialist in product-led growth and user experience.",
-    image:
-      "https://d2xsxph8kpxj0f.cloudfront.net/310519663463697740/iBVzbyjrGvjPx5wE5s8yxP/speaker-3-a5mxEdYoJruCSWaSLouWV8.webp",
+    bio: "Product leader specialising in product-led growth and user experience.",
+    image: asset("speaker-3.webp"),
     topic: "Product Strategy",
   },
   {
     name: "Arjun Patel",
     role: "Head of AI & Analytics, DataVerse",
-    bio: "Leading AI integration in enterprise strategy. Former Google and Microsoft research scientist.",
-    image:
-      "https://d2xsxph8kpxj0f.cloudfront.net/310519663463697740/iBVzbyjrGvjPx5wE5s8yxP/speaker-4-Y9Coy9YC8Ptt6mxMj3RSU9.webp",
+    bio: "Leads AI integration in enterprise strategy; background in applied machine learning research.",
+    image: asset("speaker-4.webp"),
     topic: "AI & Automation",
   },
   {
     name: "Linda Nakamura",
     role: "CMO, GlobalReach Media",
-    bio: "20 years in digital marketing leadership. Architect of campaigns reaching 100M+ consumers.",
-    image:
-      "https://d2xsxph8kpxj0f.cloudfront.net/310519663463697740/iBVzbyjrGvjPx5wE5s8yxP/speaker-5-6jF5ExGXc6Z2bmhY6yn9s8.webp",
+    bio: "Two decades in digital marketing leadership across consumer brands.",
+    image: asset("speaker-5.webp"),
     topic: "Digital Marketing",
   },
 ];
+
+type Speaker = (typeof SPEAKERS)[number];
 
 /* ─── Animation helpers ─── */
 const fadeUp = {
@@ -233,6 +231,7 @@ function Navbar() {
             onClick={() => setMobileOpen(!mobileOpen)}
             className="md:hidden p-2 text-foreground"
             aria-label="Toggle menu"
+            aria-expanded={mobileOpen}
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -279,9 +278,39 @@ function Navbar() {
   );
 }
 
-/* ─── Hero + Countdown ─── */
-const EVENT_DATE = new Date("2026-04-15T14:00:00-05:00");
+/* ─── Event date ───
+ * The event is fictional, so instead of a fixed date (which would leave the
+ * countdown stuck at zero once it passes) the demo always schedules it
+ * 30 days ahead, at 2:00 PM New York time (DST-aware).
+ */
+const EVENT_TZ = "America/New_York";
 
+function demoEventDate(): Date {
+  const day = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  const ymd = day.toISOString().slice(0, 10);
+  // 2:00 PM in New York is 18:00 UTC during daylight time, 19:00 UTC otherwise.
+  for (const utcHour of [18, 19]) {
+    const candidate = new Date(`${ymd}T${utcHour}:00:00Z`);
+    const nyHour = new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      hourCycle: "h23",
+      timeZone: EVENT_TZ,
+    }).format(candidate);
+    if (Number(nyHour) === 14) return candidate;
+  }
+  return new Date(`${ymd}T19:00:00Z`);
+}
+
+const EVENT_DATE = demoEventDate();
+const EVENT_DATE_LABEL = new Intl.DateTimeFormat("en-US", {
+  month: "long",
+  day: "numeric",
+  year: "numeric",
+  timeZone: EVENT_TZ,
+}).format(EVENT_DATE);
+const EVENT_TIME_LABEL = "2:00 PM ET";
+
+/* ─── Hero + Countdown ─── */
 function Hero() {
   const countdown = useCountdown(EVENT_DATE);
 
@@ -300,10 +329,15 @@ function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-teal/30 bg-teal/5 text-teal text-sm font-medium mb-8"
+            className="flex flex-wrap items-center gap-3 mb-8"
           >
-            <Calendar className="w-4 h-4" />
-            April 15, 2026 — Live Online Event
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-teal/30 bg-teal/5 text-teal text-sm font-medium">
+              <Calendar className="w-4 h-4" />
+              {EVENT_DATE_LABEL} — Live Online Event
+            </span>
+            <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-border/50 bg-card/40 text-muted-foreground text-xs font-medium">
+              Portfolio demo · fictional event
+            </span>
           </motion.div>
 
           <motion.h1
@@ -499,6 +533,38 @@ function About() {
 }
 
 /* ─── Speakers Section ─── */
+function SpeakerCard({ speaker, index }: { speaker: Speaker; index: number }) {
+  return (
+    <motion.div
+      variants={fadeUp}
+      custom={index}
+      className="group relative p-6 rounded-2xl bg-card/50 border border-border/40 hover:border-teal/30 transition-all duration-500 text-center"
+    >
+      <div className="w-28 h-28 rounded-full overflow-hidden mx-auto mb-5 border-2 border-border/40 group-hover:border-teal/40 transition-colors duration-500">
+        <img
+          src={speaker.image}
+          alt={`Portrait of ${speaker.name} (AI-generated)`}
+          loading="lazy"
+          width={112}
+          height={112}
+          className="w-full h-full object-cover"
+        />
+      </div>
+      <div className="inline-block px-3 py-1 rounded-full bg-teal/10 text-teal text-xs font-medium mb-3">
+        {speaker.topic}
+      </div>
+      <h3
+        className="text-lg font-semibold text-foreground mb-1"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
+        {speaker.name}
+      </h3>
+      <p className="text-sm text-teal/80 mb-3">{speaker.role}</p>
+      <p className="text-sm text-muted-foreground leading-relaxed">{speaker.bio}</p>
+    </motion.div>
+  );
+}
+
 function Speakers() {
   return (
     <section id="speakers" className="relative py-24 sm:py-32">
@@ -533,76 +599,27 @@ function Speakers() {
             custom={2}
             className="text-muted-foreground text-lg max-w-2xl mx-auto"
           >
-            Learn from five industry leaders who have shaped the future of
-            digital strategy across diverse sectors.
+            Five speakers covering strategy, growth, product, AI and marketing.
+          </motion.p>
+          <motion.p
+            variants={fadeUp}
+            custom={3}
+            className="text-xs text-muted-foreground/70 mt-3"
+          >
+            Speakers, companies and headshots are fictional (AI-generated) for
+            this design demo.
           </motion.p>
         </AnimatedSection>
 
         <AnimatedSection>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {SPEAKERS.slice(0, 3).map((speaker, i) => (
-              <motion.div
-                key={speaker.name}
-                variants={fadeUp}
-                custom={i}
-                className="group relative p-6 rounded-2xl bg-card/50 border border-border/40 hover:border-teal/30 transition-all duration-500 text-center"
-              >
-                <div className="w-28 h-28 rounded-full overflow-hidden mx-auto mb-5 border-2 border-border/40 group-hover:border-teal/40 transition-colors duration-500">
-                  <img
-                    src={speaker.image}
-                    alt={speaker.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div
-                  className="inline-block px-3 py-1 rounded-full bg-teal/10 text-teal text-xs font-medium mb-3"
-                >
-                  {speaker.topic}
-                </div>
-                <h3
-                  className="text-lg font-semibold text-foreground mb-1"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  {speaker.name}
-                </h3>
-                <p className="text-sm text-teal/80 mb-3">{speaker.role}</p>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {speaker.bio}
-                </p>
-              </motion.div>
+              <SpeakerCard key={speaker.name} speaker={speaker} index={i} />
             ))}
           </div>
           <div className="grid sm:grid-cols-2 gap-6 mt-6 max-w-2xl mx-auto lg:max-w-none lg:grid-cols-2 lg:px-[16.67%]">
             {SPEAKERS.slice(3).map((speaker, i) => (
-              <motion.div
-                key={speaker.name}
-                variants={fadeUp}
-                custom={i + 3}
-                className="group relative p-6 rounded-2xl bg-card/50 border border-border/40 hover:border-teal/30 transition-all duration-500 text-center"
-              >
-                <div className="w-28 h-28 rounded-full overflow-hidden mx-auto mb-5 border-2 border-border/40 group-hover:border-teal/40 transition-colors duration-500">
-                  <img
-                    src={speaker.image}
-                    alt={speaker.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div
-                  className="inline-block px-3 py-1 rounded-full bg-teal/10 text-teal text-xs font-medium mb-3"
-                >
-                  {speaker.topic}
-                </div>
-                <h3
-                  className="text-lg font-semibold text-foreground mb-1"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  {speaker.name}
-                </h3>
-                <p className="text-sm text-teal/80 mb-3">{speaker.role}</p>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {speaker.bio}
-                </p>
-              </motion.div>
+              <SpeakerCard key={speaker.name} speaker={speaker} index={i + 3} />
             ))}
           </div>
         </AnimatedSection>
@@ -615,37 +632,37 @@ function Speakers() {
 const AGENDA = [
   {
     time: "2:00 PM",
-    duration: "15 min",
+    duration: "10 min",
     title: "Opening Keynote: The State of Digital",
     speaker: "Dr. Maya Chen",
     description:
       "Setting the stage with a data-driven overview of where digital strategy stands today and the forces shaping its future.",
   },
   {
-    time: "2:15 PM",
-    duration: "20 min",
+    time: "2:10 PM",
+    duration: "15 min",
     title: "Growth Frameworks That Actually Work",
     speaker: "James Whitfield",
     description:
-      "A practical deep-dive into repeatable growth frameworks drawn from 50+ startup case studies.",
+      "A practical deep-dive into repeatable growth frameworks drawn from startup case studies.",
   },
   {
-    time: "2:35 PM",
-    duration: "20 min",
+    time: "2:25 PM",
+    duration: "15 min",
     title: "Building Products Users Love",
     speaker: "Sarah Mitchell",
     description:
       "How to leverage product-led growth strategies and user research to create products that drive retention.",
   },
   {
-    time: "2:55 PM",
+    time: "2:40 PM",
     duration: "5 min",
     title: "Break",
     speaker: "",
     description: "Short intermission. Grab a coffee and prepare your questions!",
   },
   {
-    time: "3:00 PM",
+    time: "2:45 PM",
     duration: "15 min",
     title: "AI-Powered Strategy: From Hype to Reality",
     speaker: "Arjun Patel",
@@ -653,7 +670,7 @@ const AGENDA = [
       "Cutting through the noise to show how AI is genuinely transforming strategic decision-making.",
   },
   {
-    time: "3:15 PM",
+    time: "3:00 PM",
     duration: "15 min",
     title: "The New Digital Marketing Playbook",
     speaker: "Linda Nakamura",
@@ -661,8 +678,8 @@ const AGENDA = [
       "Proven tactics for reaching and converting audiences in an era of privacy-first marketing.",
   },
   {
-    time: "3:30 PM",
-    duration: "30 min",
+    time: "3:15 PM",
+    duration: "15 min",
     title: "Live Q&A Panel Discussion",
     speaker: "All Speakers",
     description:
@@ -695,7 +712,8 @@ function Agenda() {
             custom={2}
             className="text-muted-foreground text-lg max-w-2xl mx-auto"
           >
-            90 minutes of focused, high-value content. All times in EST.
+            90 minutes of focused content, 2:00–3:30 PM. All times are US
+            Eastern Time (ET).
           </motion.p>
         </AnimatedSection>
 
@@ -771,7 +789,7 @@ const highlights = [
     icon: Users,
     title: "Expert Panel",
     description:
-      "Hear from 5+ industry leaders with decades of combined experience in digital strategy.",
+      "Hear from five practitioners covering strategy, product, AI and marketing.",
   },
   {
     icon: MessageSquare,
@@ -885,7 +903,7 @@ function Testimonials() {
             custom={0}
             className="inline-block text-teal text-sm font-semibold tracking-widest uppercase mb-4"
           >
-            What Past Attendees Say
+            Testimonials
           </motion.span>
           <motion.h2
             variants={fadeUp}
@@ -893,8 +911,15 @@ function Testimonials() {
             className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-4"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            Trusted by <span className="text-teal">Thousands</span>
+            What Attendees <span className="text-teal">Say</span>
           </motion.h2>
+          <motion.p
+            variants={fadeUp}
+            custom={2}
+            className="text-xs text-muted-foreground/70"
+          >
+            Sample placeholder quotes; names and companies are fictional.
+          </motion.p>
         </AnimatedSection>
 
         <AnimatedSection>
@@ -911,9 +936,11 @@ function Testimonials() {
                   {Array.from({ length: t.rating }).map((_, j) => (
                     <Star
                       key={j}
+                      aria-hidden="true"
                       className="w-4 h-4 fill-teal text-teal"
                     />
                   ))}
+                  <span className="sr-only">{t.rating} out of 5 stars</span>
                 </div>
                 <p className="text-foreground/90 leading-relaxed mb-6 text-[15px]">
                   "{t.quote}"
@@ -1035,7 +1062,7 @@ const FAQS = [
   {
     question: "Can I ask questions during the session?",
     answer:
-      "Yes! We have a dedicated 30-minute Q&A panel at the end. You can also submit questions in advance when you register, and we'll prioritize the most popular ones.",
+      "Yes! We have a dedicated 15-minute Q&A panel at the end. You can also submit questions in advance when you register, and we'll prioritize the most popular ones.",
   },
   {
     question: "What if I can't attend live?",
@@ -1084,6 +1111,8 @@ function FAQ() {
               >
                 <button
                   onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                  aria-expanded={openIndex === i}
+                  aria-controls={`faq-panel-${i}`}
                   className="w-full flex items-center justify-between p-5 text-left"
                 >
                   <span className="font-medium text-foreground pr-4">
@@ -1098,6 +1127,7 @@ function FAQ() {
                 <AnimatePresence>
                   {openIndex === i && (
                     <motion.div
+                      id={`faq-panel-${i}`}
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
@@ -1137,11 +1167,12 @@ function Signup() {
       toast.error("Please enter a valid email address.");
       return;
     }
+    // Demo only: there is no backend. Nothing is sent or stored.
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
       setSubmitted(true);
-      toast.success("You're registered! Check your inbox for confirmation.");
+      toast.success("Registration simulated (demo): no data was sent.");
     }, 1200);
   };
 
@@ -1246,7 +1277,8 @@ function Signup() {
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground mt-4 text-center">
-                    We respect your privacy. Unsubscribe at any time.
+                    Demo form: validation runs in your browser; nothing you
+                    type is sent or stored.
                   </p>
                 </form>
               ) : (
@@ -1267,22 +1299,23 @@ function Signup() {
                   </h3>
                   <p className="text-muted-foreground text-lg max-w-md mx-auto mb-6">
                     Thank you for registering,{" "}
-                    <strong className="text-foreground">{name}</strong>. We've
-                    sent a confirmation to{" "}
+                    <strong className="text-foreground">{name}</strong>. In a
+                    live deployment a confirmation would be sent to{" "}
                     <strong className="text-teal">{email}</strong>.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3 justify-center text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-teal/70" />
-                      April 15, 2026
+                      {EVENT_DATE_LABEL}
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-teal/70" />
-                      2:00 PM EST
+                      {EVENT_TIME_LABEL}
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground mt-4">
-                    Add it to your calendar — we'll also send you a reminder!
+                    This is a design demo: no e-mail was sent and nothing was
+                    stored.
                   </p>
                 </motion.div>
               )}
@@ -1294,9 +1327,9 @@ function Signup() {
               className="flex flex-wrap justify-center gap-6 sm:gap-10 mt-10 text-sm text-muted-foreground"
             >
               {[
-                { icon: Calendar, text: "April 15, 2026" },
-                { icon: Clock, text: "2:00 PM EST" },
-                { icon: Users, text: "500+ Attendees" },
+                { icon: Calendar, text: EVENT_DATE_LABEL },
+                { icon: Clock, text: EVENT_TIME_LABEL },
+                { icon: Users, text: "Limited to 500 seats" },
               ].map((item) => (
                 <div key={item.text} className="flex items-center gap-2">
                   <item.icon className="w-4 h-4 text-teal/70" />
@@ -1358,15 +1391,15 @@ function Footer() {
             <div className="flex flex-col gap-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-teal/60" />
-                April 15, 2026
+                {EVENT_DATE_LABEL}
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-teal/60" />
-                2:00 PM — 3:30 PM EST
+                2:00 PM — 3:30 PM ET
               </div>
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-teal/60" />
-                500+ Expected Attendees
+                Limited to 500 seats
               </div>
               <div className="flex items-center gap-2">
                 <Play className="w-4 h-4 text-teal/60" />
@@ -1383,7 +1416,7 @@ function Footer() {
             <div className="flex flex-col gap-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-teal/60" />
-                hello@webinarlive.com
+                hello@example.com
               </div>
               <p className="text-xs mt-2">
                 Have questions? Drop us an email and we'll get back to you within
@@ -1396,7 +1429,8 @@ function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-border/30 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} WebinarLive. All rights reserved.
+            &copy; {new Date().getFullYear()} Thy Chantha · Portfolio design
+            demo. “WebinarLive” and all event details are fictional.
           </div>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
             <button
